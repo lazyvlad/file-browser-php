@@ -1,6 +1,8 @@
 # file-browser-php
 Browse a folder relative to your root folder.
 
+Code of interest is in index.php
+app.php and api.php are here for some backward compatability
 ## API parameters
 
  - folder (String)  -  string that represents the folder relative to the ROOT of the app (relative to index.php)
