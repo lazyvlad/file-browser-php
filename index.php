@@ -1,4 +1,16 @@
 <?php
+/**
+ * @author lazyvlad
+ * @since 10/15/2022 (1.0.0)
+ * @version 1.0.0
+ * 
+ */
+
+
+	$server_name = $_SERVER['SERVER_NAME'];
+
+	//this is usually empty as you host your app in the root . mine is in images for some reason
+	$sub_folder = 'images';
 
 	//open_basedir violations don't throw exceptions but warnings and that's why we turn all errors into exceptions
 	set_error_handler(function($errno, $errstr, $errfile, $errline) {
@@ -13,7 +25,9 @@
 	//set open_basedir ini config. This denies access to the parent folder so if they send us a path like ./../../ , hich will results into going two folders up and showing the content of home folder, this directive will stop that
 	ini_set('open_basedir',dirname(__FILE__));
 
-	$entry_point = 'https://php72.afk.mk/images';
+	//we build URLs based on entry later on
+	$entry_point = "https://${server_name}/${sub_folder}";
+	
 
 	//show data as json
 	$as_api = true;
@@ -347,11 +361,6 @@ catch(Exception $err){
 
 $final_listing = build_blocks( $items, $directory_to_scan,0);
 
-// header('Content-Type: application/json; charset=utf-8');
-// header("Access-Control-Allow-Origin: *");
-// header("Access-Control-Allow-Credentials: true");
-// header("Access-Control-Allow-Methods: GET,POST,OPTIONS");
-// header("Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization");
 
 
 // echo json_encode($cut_date);
