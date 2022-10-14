@@ -1,7 +1,7 @@
 # file-browser-php
 Browse a folder relative to your root folder.
 
-Code of interest is in index.php
+Code of interest is in *index.php*,
 app.php and api.php are here for some backward compatability
 ## API parameters
 
