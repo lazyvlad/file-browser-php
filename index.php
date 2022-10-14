@@ -3,14 +3,18 @@
  * @author lazyvlad
  * @since 10/15/2022 (1.0.0)
  * @version 1.0.0
- * 
+ * @note THIS IS NOT A PRODUCTION SCRIPT, it's for showcase purposes!!!
+ * FOR PRODUCTION always sanitize the input from the GET parameters
  */
 
 
 	$server_name = $_SERVER['SERVER_NAME'];
 
-	//this is usually empty as you host your app in the root . mine is in images for some reason
+	//this is usually empty as you host your app probably in the root dir of your host. However if your access it on a subfolder set this value
 	$sub_folder = 'images';
+
+	//show the file if it's an image  instead of returning a json object . not sure why we would want this, but here it is
+	$show_file_if_last = false;
 
 	//open_basedir violations don't throw exceptions but warnings and that's why we turn all errors into exceptions
 	set_error_handler(function($errno, $errstr, $errfile, $errline) {
@@ -60,7 +64,7 @@
 	$sort_by = "date_desc"; // options: name_asc, name_desc, date_asc, date_desc //this is a bit tricky atm doesn't really work properly
 	
 	
-	// TOGGLE SUB FOLDERS, SET TO false IF YOU WANT OFF
+	// TOGGLE SUB FOLDERS, SET TO false IF YOU WANT OFF TODO remove this
 	$toggle_sub_folders = true;
 	
 	// IGNORE EMPTY FOLDERS
@@ -75,12 +79,16 @@ function ext($filename)
 {
 	return substr( strrchr( $filename,'.' ),1 );
 }
-
+/**
+ * get the dir name
+ */
 function dir_name($dir_name){
 	return substr( strrchr( $dir_name,'/' ),1 );
 }
 
-
+/**
+ * is the file image?
+ */
 function is_image($filename){
 
 	if(@is_array(getimagesize($filename))){
@@ -91,7 +99,9 @@ function is_image($filename){
 
 	return $image;
 }
-
+/**
+ * calculate some size
+ */
 function display_size($bytes, $precision = 2) 
 {
 	$units = array('B', 'KB', 'MB', 'GB', 'TB');
@@ -101,13 +111,17 @@ function display_size($bytes, $precision = 2)
     $bytes /= (1 << (10 * $pow)); 
 	return round($bytes, $precision) . $units[$pow];
 }
-
+/**
+ * count the number of files in a directory
+ */
 function count_dir_files( $dir)
 {
 	$fi = new FilesystemIterator(__DIR__ . "/" . $dir, FilesystemIterator::SKIP_DOTS);
 	return iterator_count($fi);
 }
-
+/**
+ * get the directory size
+ */
 function get_directory_size($path)
 {
     $bytestotal = 0;
@@ -157,7 +171,9 @@ function include_in_response($file){
 	
 }
 
-/* return an object of file properties */
+/**
+ * return an object of file properties 
+ */ 
 function display_block( $file )
 {
 	global $ignore_file_list, $ignore_ext_list, $entry_point,$cut_date,$return_direction,$cut_date_end;
@@ -272,7 +288,7 @@ function build_blocks( $items, $folder, $step=0, $listing =array())
 						'name' 	=> 	dir_name($file),
 						 'type' => 	'dir',
 						 'data' => 	display_block($file),
-						 'subs' => 	($depth_search) ? build_blocks($sub_items,$file,$step++) : null
+						 'subs' => 	($depth_search) ? build_blocks($sub_items,$file,$step++) : null //if it has subfolders then we do build_blocks again, to infinity
 					);
 					
 				}
@@ -300,25 +316,33 @@ function build_blocks( $items, $folder, $step=0, $listing =array())
 }
 $items = array();
 
+/**
+ *
+ * send the file to the browser if it's an image
+ */
 
-// echo dirname(__FILE__) . '/'. $directory_to_scan;
-// echo '</br>';
-// echo realpath(dirname(__FILE__) . '/'. $directory_to_scan);
-// exit;
+ if($show_file_if_last){
+	 
+	 if(is_file(dirname(__FILE__) . '/'. $directory_to_scan)){
+		if(is_image($file)){
 
-//CODE if we want to actualy show the file contents
-// if(is_file(dirname(__FILE__) . '/'. $directory_to_scan)){
+			$file = dirname(__FILE__) . '/'. $directory_to_scan;
+			$fp = fopen($file, 'rb');
+		
+			header("Content-Type: image/".ext($file));
+			header("Content-Length: " . filesize($file));
+		
+			fpassthru($fp);
+			exit;
 
-// 	$file = dirname(__FILE__) . '/'. $directory_to_scan;
-// 	$fp = fopen($file, 'rb');
+		} else {
+			//handle code if not image, CBA to do it now
+		}
 
-// 	header("Content-Type: image/".ext($file));
-// 	header("Content-Length: " . filesize($file));
+	 }
+ }
 
-// 	fpassthru($fp);
-// 	exit;
 
-// }
 try{
 	if(is_file(dirname(__FILE__) . '/'. $directory_to_scan)){
 
